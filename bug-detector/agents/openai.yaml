@@ -1,0 +1,4 @@
+interface:
+  display_name: "Bug Detector"
+  short_description: "Diagnose and fix booking logic defects"
+  default_prompt: "Use the bug-detector skill to diagnose this Smart Campus booking defect. Show the evidence, root cause, minimal fix, regression test, and verification status. Never claim tests passed unless they were executed."
