@@ -92,6 +92,7 @@ export default function App() {
     const start = parseTimeInput(startText);
     const end = parseTimeInput(endText);
     if (start === null || end === null) {
+      setResult(null);
       return;
     }
     setResult(checkAvailability({ start, end, now, room: selectedRoom }));
