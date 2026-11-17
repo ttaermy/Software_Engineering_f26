@@ -649,7 +649,7 @@ function ExplanationPanel({
         <div className="rounded-xl border border-slate-200 bg-slate-50 p-4">
           <p className="flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wide text-slate-500">
             <Info className="h-3.5 w-3.5" />
-            AI-generated explanation · not a booking confirmation
+            Automated explanation · not a booking confirmation
           </p>
           <p className="mt-2 text-sm leading-relaxed text-slate-700">
             {explanation.text}
