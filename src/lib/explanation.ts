@@ -29,6 +29,22 @@ const MAX_TEXT = 500;
 
 const REASON_CODE_RE = /^[a-zA-Z0-9_-]+$/;
 
+// Mirrors the formats accepted by parseTimeInput in App.tsx: optional 12-hour
+// AM/PM suffix. With AM/PM the hour must be 1-12; without it, 0-23.
+const TIME_RE = /^(\d{1,2}):(\d{2})\s*(AM|PM)?$/i;
+
+export function isValidTimeFormat(value: string): boolean {
+  const match = TIME_RE.exec(value.trim());
+  if (!match) return false;
+  const hours = Number(match[1]);
+  const minutes = Number(match[2]);
+  const period = match[3]?.toUpperCase();
+  if (!Number.isInteger(hours) || !Number.isInteger(minutes)) return false;
+  if (minutes < 0 || minutes > 59) return false;
+  if (period) return hours >= 1 && hours <= 12;
+  return hours >= 0 && hours <= 23;
+}
+
 /**
  * Validates and normalizes structured explanation input. Returns null when the
  * input is empty, malformed, or excessively long.
@@ -54,6 +70,8 @@ export function validateExplanationInput(
     startTime.length > MAX_TIME ||
     endTime.length === 0 ||
     endTime.length > MAX_TIME ||
+    !isValidTimeFormat(startTime) ||
+    !isValidTimeFormat(endTime) ||
     reasonCode.length === 0 ||
     reasonCode.length > MAX_REASON_CODE ||
     !REASON_CODE_RE.test(reasonCode) ||
@@ -79,6 +97,12 @@ function sanitizeFragment(value: string): string {
   return value.replace(/[.!?]+/g, ",").replace(/,+$/, "").trim();
 }
 
+/**
+ * Simple heuristic sentence counter: splits on `.`, `!`, or `?` and counts
+ * non-empty fragments. It does not understand abbreviations ("e.g.", "Dr.",
+ * "3 p.m.") or decimals ("1.5"), so it can overcount; it is intentionally
+ * kept as a conservative gate, not a grammar-aware parser.
+ */
 export function countSentences(text: string): number {
   return text
     .split(/[.!?]+/)
@@ -125,18 +149,22 @@ export function mockExplainAdapter(input: ExplanationInput): string {
 /** Deterministic fallback used when the adapter fails or returns invalid output. */
 export function buildFallbackText(input: ExplanationInput): string {
   if (input.status === "available") {
-    return (
+    const text =
       `The checker confirmed this slot is available in ${input.roomName}. ` +
-      `No booking has been created.`
-    );
+      `No booking has been created.`;
+    if (text.length <= MAX_TEXT) return text;
+    return `This slot is available. No booking has been created.`;
   }
   const detail = input.reason
     ? sanitizeFragment(input.reason)
     : `Reason code ${input.reasonCode}`;
-  return (
+  const text =
     `The checker determined this slot is unavailable in ${input.roomName}. ` +
-    `${detail}.`
-  );
+    `${detail}.`;
+  if (text.length <= MAX_TEXT) return text;
+  // Concise fallback that always fits: preserves the authoritative status and
+  // the reason code even if a very long reason was supplied.
+  return `This slot is unavailable. Reason code ${input.reasonCode}.`;
 }
 
 /**

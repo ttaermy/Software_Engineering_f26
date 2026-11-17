@@ -66,6 +66,17 @@ describe("validateExplanationInput", () => {
     expect(validateExplanationInput({ ...validInput, startTime: 900 })).toBeNull();
     expect(validateExplanationInput({ ...validInput, endTime: null })).toBeNull();
   });
+
+  it("accepts all time formats parseTimeInput supports", () => {
+    for (const t of ["10:30", "10:30 AM", "9:00am", "2:45 pm", "00:00", "23:59"])
+      expect(validateExplanationInput({ ...validInput, startTime: t, endTime: t })).not.toBeNull();
+  });
+
+  it("rejects time strings parseTimeInput would reject", () => {
+    for (const t of ["25:00", "12:60", "9 AM", ":30", "abc", "10:30:00", "10-30"])
+      expect(validateExplanationInput({ ...validInput, startTime: t })).toBeNull();
+    expect(validateExplanationInput({ ...validInput, endTime: "12:xx" })).toBeNull();
+  });
 });
 
 describe("validateExplanationText", () => {
@@ -158,5 +169,38 @@ describe("explainAvailability", () => {
     });
     expect(fallback).toContain("available");
     expect(fallback).toContain("No booking has been created.");
+  });
+
+  it("fallback text never exceeds the 500-character output limit", () => {
+    const longReason = "R".repeat(300);
+    const longName = "N".repeat(100);
+
+    const unavailable = buildFallbackText({
+      ...validInput,
+      roomName: longName,
+      reason: longReason,
+    });
+    expect(unavailable.length).toBeLessThanOrEqual(500);
+    expect(unavailable).toContain("unavailable");
+
+    const available = buildFallbackText({
+      ...validInput,
+      status: "available",
+      roomName: longName,
+      reason: undefined,
+    });
+    expect(available.length).toBeLessThanOrEqual(500);
+    expect(available).toContain("available");
+  });
+
+  it("concise fallback preserves the reason code when the combined text would exceed the limit", () => {
+    const text = buildFallbackText({
+      ...validInput,
+      roomName: "N".repeat(100),
+      reason: "R".repeat(500),
+    });
+    expect(text.length).toBeLessThanOrEqual(500);
+    expect(text).toContain(validInput.reasonCode);
+    expect(countSentences(text)).toBeLessThanOrEqual(MAX_SENTENCES);
   });
 });

@@ -235,13 +235,19 @@ export default function App() {
                   label="Start time"
                   placeholder="e.g. 10:30 AM"
                   value={startText}
-                  onChange={setStartText}
+                  onChange={(v) => {
+                    setStartText(v);
+                    setExplanation(null);
+                  }}
                 />
                 <TimeField
                   label="End time"
                   placeholder="e.g. 11:30 AM"
                   value={endText}
-                  onChange={setEndText}
+                  onChange={(v) => {
+                    setEndText(v);
+                    setExplanation(null);
+                  }}
                 />
               </div>
 
