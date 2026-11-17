@@ -20,6 +20,10 @@ import {
 } from "@/lib/availability";
 import { ROOMS, cloneRoom } from "@/lib/room-fixture";
 import { filterRooms } from "@/lib/filtering";
+import {
+  explainAvailability,
+  type ExplanationOutput,
+} from "@/lib/explanation";
 
 /** Current time in integer minutes after midnight, recomputed per render. */
 function currentMinutes(): number {
@@ -56,6 +60,7 @@ export default function App() {
   const [startText, setStartText] = useState("");
   const [endText, setEndText] = useState("");
   const [result, setResult] = useState<CheckResult | null>(null);
+  const [explanation, setExplanation] = useState<ExplanationOutput | null>(null);
   const [error, setError] = useState<string | null>(null);
 
   const now = currentMinutes();
@@ -93,15 +98,30 @@ export default function App() {
     const end = parseTimeInput(endText);
     if (start === null || end === null) {
       setResult(null);
+      setExplanation(null);
       return;
     }
     setResult(checkAvailability({ start, end, now, room: selectedRoom }));
+    setExplanation(null);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selectedRoom?.id]);
+
+  function reasonCodeFor(checkResult: CheckResult): string {
+    if (checkResult.status === "available") return "slot_open";
+    if (checkResult.reason.includes("blocked")) return "room_blocked";
+    if (checkResult.reason.includes("Overlaps")) return "booking_overlap";
+    if (checkResult.reason.includes("Duration")) return "duration_limit";
+    if (checkResult.reason.includes("past")) return "start_in_past";
+    if (checkResult.reason.includes("whole minutes")) return "non_integer_minutes";
+    if (checkResult.reason.includes("earlier than")) return "start_after_end";
+    if (checkResult.reason.includes("same day")) return "out_of_day_range";
+    return "unknown_reason";
+  }
 
   function handleCheck() {
     setError(null);
     setResult(null);
+    setExplanation(null);
 
     if (!selectedRoom) {
       setError("No rooms match the current filters.");
@@ -123,10 +143,29 @@ export default function App() {
     setResult(checkAvailability({ start, end, now, room: selectedRoom }));
   }
 
+  function handleExplain() {
+    if (!result || !selectedRoom) return;
+    const start = parseTimeInput(startText);
+    const end = parseTimeInput(endText);
+    if (start === null || end === null) return;
+
+    setExplanation(
+      explainAvailability({
+        roomName: selectedRoom.name,
+        startTime: formatTime(start),
+        endTime: formatTime(end),
+        status: result.status,
+        reasonCode: reasonCodeFor(result),
+        reason: result.status === "unavailable" ? result.reason : undefined,
+      }),
+    );
+  }
+
   function handleReset() {
     setStartText("");
     setEndText("");
     setResult(null);
+    setExplanation(null);
     setError(null);
   }
 
@@ -135,6 +174,7 @@ export default function App() {
       prev.includes(item) ? prev.filter((e) => e !== item) : [...prev, item],
     );
     setResult(null);
+    setExplanation(null);
     setError(null);
   }
 
@@ -142,6 +182,7 @@ export default function App() {
     setAttendees(1);
     setSelectedEquipment([]);
     setResult(null);
+    setExplanation(null);
     setError(null);
   }
 
@@ -233,6 +274,13 @@ export default function App() {
               </div>
 
               {result && <ResultPanel result={result} />}
+
+              {result && (
+                <ExplanationPanel
+                  explanation={explanation}
+                  onExplain={handleExplain}
+                />
+              )}
             </section>
           </>
         )}
@@ -565,6 +613,39 @@ function ResultPanel({ result }: { result: CheckResult }) {
           </p>
         </div>
       </div>
+    </div>
+  );
+}
+
+function ExplanationPanel({
+  explanation,
+  onExplain,
+}: {
+  explanation: ExplanationOutput | null;
+  onExplain: () => void;
+}) {
+  return (
+    <div className="mt-4">
+      {!explanation ? (
+        <button
+          type="button"
+          onClick={onExplain}
+          className="inline-flex items-center gap-2 rounded-lg border border-slate-300 bg-white px-4 py-2 text-sm font-semibold text-slate-700 transition hover:bg-slate-50 focus:outline-none focus:ring-2 focus:ring-slate-400 focus:ring-offset-2"
+        >
+          <Info className="h-4 w-4" />
+          Explain availability
+        </button>
+      ) : (
+        <div className="rounded-xl border border-slate-200 bg-slate-50 p-4">
+          <p className="flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wide text-slate-500">
+            <Info className="h-3.5 w-3.5" />
+            AI-generated explanation · not a booking confirmation
+          </p>
+          <p className="mt-2 text-sm leading-relaxed text-slate-700">
+            {explanation.text}
+          </p>
+        </div>
+      )}
     </div>
   );
 }
