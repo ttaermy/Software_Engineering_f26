@@ -237,7 +237,9 @@ export default function App() {
                   value={startText}
                   onChange={(v) => {
                     setStartText(v);
+                    setResult(null);
                     setExplanation(null);
+                    setError(null);
                   }}
                 />
                 <TimeField
@@ -246,7 +248,9 @@ export default function App() {
                   value={endText}
                   onChange={(v) => {
                     setEndText(v);
+                    setResult(null);
                     setExplanation(null);
+                    setError(null);
                   }}
                 />
               </div>
