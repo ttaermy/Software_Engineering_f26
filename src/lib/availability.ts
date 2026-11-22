@@ -81,11 +81,12 @@ export function checkAvailability(req: CheckRequest): CheckResult {
 
   // AC1: integer minutes, 0 <= start < end <= 1440, start strictly after now.
   if (!isIntegerMinutes(start) || !isIntegerMinutes(end)) {
-    return {
-      status: "unavailable",
-      reason: "Start and end times must be whole minutes.",
-    };
-  }
+  return {
+    status: "unavailable",
+    reason: "Start and end times must be whole minutes.",
+    reasonCode: "non_integer_minutes",
+  };
+}
   if (start < 0 || end > MINUTES_PER_DAY) {
     return {
       status: "unavailable",
