@@ -112,21 +112,23 @@ export function checkAvailability(req: CheckRequest): CheckResult {
   // AC2: duration must not exceed 120 minutes (exactly 120 is allowed).
   const duration = end - start;
   if (duration > MAX_DURATION) {
-    return {
-      status: "unavailable",
-      reason: `Duration is ${duration} minutes. Maximum allowed is 120 minutes.`,
-    };
-  }
+  return {
+    status: "unavailable",
+    reason: `Duration is ${duration} minutes. Maximum allowed is 120 minutes.`,
+    reasonCode: "duration_limit",
+  };
+}
 
   // AC4: reject overlap with any existing booking (endpoint touches are fine).
   const candidate: Booking = { start, end };
   const conflict = room.bookings.find((b) => intervalsOverlap(candidate, b));
   if (conflict) {
-    return {
-      status: "unavailable",
-      reason: `Overlaps an existing booking (${formatTime(conflict.start)} – ${formatTime(conflict.end)}).`,
-    };
-  }
+  return {
+    status: "unavailable",
+    reason: `Overlaps an existing booking (${formatTime(conflict.start)} – ${formatTime(conflict.end)}).`,
+    reasonCode: "booking_overlap",
+  };
+}
 
   // AC5: unambiguous available result.
   return { status: "available" };
