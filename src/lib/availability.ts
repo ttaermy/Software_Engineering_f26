@@ -95,17 +95,19 @@ export function checkAvailability(req: CheckRequest): CheckResult {
   };
 }
   if (start >= end) {
-    return {
-      status: "unavailable",
-      reason: "Start time must be earlier than end time.",
-    };
-  }
+  return {
+    status: "unavailable",
+    reason: "Start time must be earlier than end time.",
+    reasonCode: "start_after_end",
+  };
+}
   if (start <= now) {
-    return {
-      status: "unavailable",
-      reason: "Start time must be strictly after the current time.",
-    };
-  }
+  return {
+    status: "unavailable",
+    reason: "Start time must be strictly after the current time.",
+    reasonCode: "start_in_past",
+  };
+}
 
   // AC2: duration must not exceed 120 minutes (exactly 120 is allowed).
   const duration = end - start;
