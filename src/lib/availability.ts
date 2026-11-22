@@ -72,11 +72,12 @@ export function checkAvailability(req: CheckRequest): CheckResult {
   // requested times are invalid. The blocked-room reason takes precedence so a
   // blocked room always reports the same unambiguous outcome.
   if (room.blocked) {
-    return {
-      status: "unavailable",
-      reason: `"${room.name}" is currently blocked and cannot be booked.`,
-    };
-  }
+  return {
+    status: "unavailable",
+    reason: `"${room.name}" is currently blocked and cannot be booked.`,
+    reasonCode: "room_blocked",
+  };
+}
 
   // AC1: integer minutes, 0 <= start < end <= 1440, start strictly after now.
   if (!isIntegerMinutes(start) || !isIntegerMinutes(end)) {
