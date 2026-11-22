@@ -120,4 +120,40 @@ describe("Smart Campus availability — baseline", () => {
 
   expect(JSON.stringify(bookings)).toBe(original);
 });
+
+  it("returns the room_blocked reason code", () => {
+  expect(check(600, 660, { blocked: true })).toMatchObject({
+    status: "unavailable",
+    reasonCode: "room_blocked",
+  });
+});
+
+it("returns the duration_limit reason code", () => {
+  expect(check(600, 721)).toMatchObject({
+    status: "unavailable",
+    reasonCode: "duration_limit",
+  });
+});
+
+it("returns the booking_overlap reason code", () => {
+  expect(check(590, 620)).toMatchObject({
+    status: "unavailable",
+    reasonCode: "booking_overlap",
+  });
+});
+
+it("returns the start_in_past reason code", () => {
+  expect(check(470, 500)).toMatchObject({
+    status: "unavailable",
+    reasonCode: "start_in_past",
+  });
+});
+
+it("returns the start_after_end reason code", () => {
+  expect(check(700, 700)).toMatchObject({
+    status: "unavailable",
+    reasonCode: "start_after_end",
+  });
+});
+  
 });
