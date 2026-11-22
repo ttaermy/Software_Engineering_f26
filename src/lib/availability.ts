@@ -88,11 +88,12 @@ export function checkAvailability(req: CheckRequest): CheckResult {
   };
 }
   if (start < 0 || end > MINUTES_PER_DAY) {
-    return {
-      status: "unavailable",
-      reason: "Times must be within the same day (0 to 1440 minutes).",
-    };
-  }
+  return {
+    status: "unavailable",
+    reason: "Times must be within the same day (0 to 1440 minutes).",
+    reasonCode: "out_of_day_range",
+  };
+}
   if (start >= end) {
     return {
       status: "unavailable",
