@@ -124,7 +124,15 @@ export default function App() {
       return;
     }
 
-    setResult(checkAvailability({ start, end, now, room: selectedRoom }));
+    const freshNow = currentMinutes();
+setResult(
+  checkAvailability({
+    start,
+    end,
+    now: freshNow,
+    room: selectedRoom,
+  }),
+);
   }
 
   function handleExplain() {
