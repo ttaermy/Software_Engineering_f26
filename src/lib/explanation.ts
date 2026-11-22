@@ -3,6 +3,8 @@
 // deterministic and validated; the availability result from checkAvailability()
 // always remains the authoritative decision.
 
+import { parseTimeInput } from "@/lib/time";
+
 export interface ExplanationInput {
   roomName: string;
   startTime: string;
