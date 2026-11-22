@@ -24,6 +24,7 @@ import {
   explainAvailability,
   type ExplanationOutput,
 } from "@/lib/explanation";
+import { parseTimeInput } from "@/lib/time";
 
 /** Current time in integer minutes after midnight, recomputed per render. */
 function currentMinutes(): number {
