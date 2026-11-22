@@ -91,16 +91,10 @@ export default function App() {
   }, [selectedRoom?.id]);
 
   function reasonCodeFor(checkResult: CheckResult): string {
-    if (checkResult.status === "available") return "slot_open";
-    if (checkResult.reason.includes("blocked")) return "room_blocked";
-    if (checkResult.reason.includes("Overlaps")) return "booking_overlap";
-    if (checkResult.reason.includes("Duration")) return "duration_limit";
-    if (checkResult.reason.includes("past")) return "start_in_past";
-    if (checkResult.reason.includes("whole minutes")) return "non_integer_minutes";
-    if (checkResult.reason.includes("earlier than")) return "start_after_end";
-    if (checkResult.reason.includes("same day")) return "out_of_day_range";
-    return "unknown_reason";
-  }
+  return checkResult.status === "available"
+    ? "slot_open"
+    : checkResult.reasonCode;
+}
 
   function handleCheck() {
     setError(null);
