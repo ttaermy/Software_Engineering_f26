@@ -32,23 +32,6 @@ function currentMinutes(): number {
   return now.getHours() * 60 + now.getMinutes();
 }
 
-function parseTimeInput(value: string): number | null {
-  const match = /^(\d{1,2}):(\d{2})\s*(AM|PM)?$/i.exec(value.trim());
-  if (!match) return null;
-  let hours = Number(match[1]);
-  const minutes = Number(match[2]);
-  const period = match[3]?.toUpperCase();
-  if (!Number.isInteger(hours) || !Number.isInteger(minutes)) return null;
-  if (hours < 0 || hours > 23 || minutes < 0 || minutes > 59) return null;
-
-  if (period) {
-    if (hours < 1 || hours > 12) return null;
-    if (period === "AM") hours = hours === 12 ? 0 : hours;
-    else hours = hours === 12 ? 12 : hours + 12;
-  }
-  return hours * 60 + minutes;
-}
-
 /** Union of every equipment item across the catalog, used for the filter UI. */
 const ALL_EQUIPMENT: string[] = Array.from(
   new Set(ROOMS.flatMap((r) => r.equipment)),
