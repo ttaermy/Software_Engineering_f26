@@ -29,9 +29,22 @@ export interface CheckRequest {
   room: RoomState;
 }
 
+export type AvailabilityReasonCode =
+  | "room_blocked"
+  | "non_integer_minutes"
+  | "out_of_day_range"
+  | "start_after_end"
+  | "start_in_past"
+  | "duration_limit"
+  | "booking_overlap";
+
 export type CheckResult =
   | { status: "available" }
-  | { status: "unavailable"; reason: string };
+  | {
+      status: "unavailable";
+      reason: string;
+      reasonCode: AvailabilityReasonCode;
+    };
 
 const MINUTES_PER_DAY = 1440;
 const MAX_DURATION = 120;
