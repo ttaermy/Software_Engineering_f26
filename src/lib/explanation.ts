@@ -33,18 +33,9 @@ const REASON_CODE_RE = /^[a-zA-Z0-9_-]+$/;
 
 // Mirrors the formats accepted by parseTimeInput in App.tsx: optional 12-hour
 // AM/PM suffix. With AM/PM the hour must be 1-12; without it, 0-23.
-const TIME_RE = /^(\d{1,2}):(\d{2})\s*(AM|PM)?$/i;
 
-export function isValidTimeFormat(value: string): boolean {
-  const match = TIME_RE.exec(value.trim());
-  if (!match) return false;
-  const hours = Number(match[1]);
-  const minutes = Number(match[2]);
-  const period = match[3]?.toUpperCase();
-  if (!Number.isInteger(hours) || !Number.isInteger(minutes)) return false;
-  if (minutes < 0 || minutes > 59) return false;
-  if (period) return hours >= 1 && hours <= 12;
-  return hours >= 0 && hours <= 23;
+function isValidTimeFormat(value: string): boolean {
+  return parseTimeInput(value) !== null;
 }
 
 /**
